@@ -16,8 +16,9 @@ public class Main {
 		
 		// parse command line arguments
 		String ipAddress = args[0];
+		int port = -1;
 		try {
-			int port = Integer.parseInt(args[1]);
+			port = Integer.parseInt(args[1]);
 		} catch(NumberFormatException e) {
 			System.out.println("ERROR: Could not covert \"" + args[1] + "\" into a number. Enter a valid number for the port.");
 			System.exit(1);
@@ -25,6 +26,8 @@ public class Main {
 		String fileSystemDirectory = args[2];
 		
 		Network network = new Network(ipAddress, port);
+		
+		ClientConnection connection = network.getClientConnection();
 		
 	}
 }
