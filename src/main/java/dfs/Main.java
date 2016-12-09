@@ -28,6 +28,7 @@ public class Main {
 		Network network = new Network(ipAddress, port);
 		
 		ClientConnection connection = network.getClientConnection();
+		connection.listen();
 		
 	}
 }
