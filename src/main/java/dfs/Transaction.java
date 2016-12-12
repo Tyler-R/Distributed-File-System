@@ -2,12 +2,16 @@ package main.java.dfs;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import main.java.dfs.message.Message;
 import main.java.dfs.message.request.WriteMessage;
 
 public class Transaction {
-	private ArrayList<WriteMessage> writeMessages = new ArrayList<WriteMessage>();
+	private ConcurrentSkipListSet<WriteMessage> writeMessages = 
+			new ConcurrentSkipListSet<WriteMessage>(
+					(WriteMessage a, WriteMessage b) -> a.getSequenceNumber().compareTo(b.getSequenceNumber())
+			);
 	
 	private BigInteger transactionID = null;
 	private String fileName = "";
@@ -25,14 +29,47 @@ public class Transaction {
 		
 		BigInteger newMessageSequenceNumber = newMessage.getSequenceNumber();
 		
-		for(WriteMessage message : writeMessages) {
-			if(message.getSequenceNumber().equals(newMessageSequenceNumber)) {
-				throw new DuplicateMessageException();
+		if(!writeMessages.add(newMessage)) {
+			// could not add message to set
+			throw new DuplicateMessageException();
+		}		
+	}
+	
+	public ArrayList<BigInteger> getMissingWritesSequenceNumbers(BigInteger expectedSize) {
+		int numberOfWritesMissed = expectedSize.subtract(BigInteger.valueOf(writeMessages.size())).intValue();
+
+		if(numberOfWritesMissed > 0) {
+			ArrayList<BigInteger> missingWrites = new ArrayList<BigInteger>(numberOfWritesMissed);
+			
+			BigInteger i = BigInteger.valueOf(1);
+			
+			for(WriteMessage message : writeMessages) {
+				while(!message.getSequenceNumber().equals(i)) {
+					missingWrites.add(new BigInteger(i.toString()));
+					i.add(BigInteger.ONE);
+				}
+				
+				i.add(BigInteger.ONE);
 			}
+			
+			while(!i.equals(expectedSize)) {
+				missingWrites.add(new BigInteger(i.toString()));
+			}
+			
+			return missingWrites;
 		}
 		
-		writeMessages.add(newMessage);
+		return null; 
+	}
+	
+	public String getWriteMessage() {
 		
+		String message = "";
+		for(WriteMessage writeMessage : writeMessages) {
+			message += writeMessage.getData();
+		}
+		
+		return message;
 	}
 	
 	
