@@ -2,6 +2,7 @@ package main.java.dfs.message;
 
 import java.math.BigInteger;
 
+import main.java.dfs.ClientConnection;
 import main.java.dfs.message.request.AbortMessage;
 import main.java.dfs.message.request.CommitMessage;
 import main.java.dfs.message.request.NewTransactionMessage;
@@ -11,7 +12,7 @@ import main.java.dfs.message.response.ErrorMessage;
 
 public abstract class MessageFactory {
 		
-	public static Message makeRequestMessage(String method, String transactionID, String sequenceNumber, String data) {
+	public static Message makeRequestMessage(String method, String transactionID, String sequenceNumber, String data, ClientConnection connection) {
 		
 		Message message = null;
 		// convert the method to upper case for easier comparison.
@@ -37,7 +38,7 @@ public abstract class MessageFactory {
 		
 		if(method.equals(ReadMessage.METHOD_ID)) {
 			
-			message = new ReadMessage(data);
+			message = new ReadMessage(data, connection);
 			
 		} else if(method.equals(NewTransactionMessage.METHOD_ID)) {
 			
