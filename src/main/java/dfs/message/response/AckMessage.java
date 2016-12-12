@@ -1,4 +1,4 @@
-package main.java.dfs.message.Response;
+package main.java.dfs.message.response;
 
 import java.math.BigInteger;
 

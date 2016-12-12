@@ -2,11 +2,11 @@ package main.java.dfs.message;
 
 import java.math.BigInteger;
 
-import main.java.dfs.message.Request.CommitMessage;
-import main.java.dfs.message.Request.NewTransactionMessage;
-import main.java.dfs.message.Request.ReadMessage;
-import main.java.dfs.message.Request.WriteMessage;
-import main.java.dfs.message.Response.ErrorMessage;
+import main.java.dfs.message.request.CommitMessage;
+import main.java.dfs.message.request.NewTransactionMessage;
+import main.java.dfs.message.request.ReadMessage;
+import main.java.dfs.message.request.WriteMessage;
+import main.java.dfs.message.response.ErrorMessage;
 
 public abstract class MessageFactory {
 		
