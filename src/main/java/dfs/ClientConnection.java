@@ -44,6 +44,7 @@ public class ClientConnection {
 			inStream.readLine();
 			// read data
 			String data = inStream.readLine();
+			// add back on data and newline buffer to message
 			message += "\r\n\r\n" + data;
 			
 		} catch (SocketException e) {					
