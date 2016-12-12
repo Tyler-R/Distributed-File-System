@@ -2,6 +2,9 @@ package main.java.dfs.message.request;
 
 import java.math.BigInteger;
 
+import main.java.dfs.DuplicateMessageException;
+import main.java.dfs.Transaction;
+import main.java.dfs.TransactionManager;
 import main.java.dfs.message.Message;
 
 public class WriteMessage implements Message {
@@ -19,7 +22,23 @@ public class WriteMessage implements Message {
 
 	@Override
 	public void execute() {
+		TransactionManager transactionManager = TransactionManager.getInstance();
+		Transaction transaction = transactionManager.getTransaction(transcationID);
 		
+		try {
+			transaction.addWriteOperation(this);
+		} catch(DuplicateMessageException e) {
+			
+		}
+		
+	}
+	
+	public BigInteger getSequenceNumber() {
+		return sequenceNumber;
+	}
+	
+	public String getData() {
+		return this.data;
 	}
 	
 	
