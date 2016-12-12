@@ -15,7 +15,7 @@ public class ClientConnection {
 	
 	private Socket socket = null;
 	
-	public static final int BUFFER_LENGTH = 4096
+	public static final int BUFFER_LENGTH = 4096;
 	
 	public ClientConnection(Socket socket) {
 		this.socket = socket;
