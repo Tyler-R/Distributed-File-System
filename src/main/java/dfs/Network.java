@@ -19,6 +19,7 @@ public class Network {
 			System.out.println("ERROR creating socket to listen on port \"" + port 
 					+ "\" on address \"" + convertToInetAddress(ipAddress).getHostAddress() 
 					+ "\" with backlog \"" + BACKLOG + "\"");
+			e.printStackTrace();
 		}
 	}
 	
@@ -42,7 +43,7 @@ public class Network {
 				socket = serverSocket.accept();
 			} catch (IOException e) {
 				System.out.println("ERROR: server could not accept connection on \"" + getAddress() + ":" + getPort() + "\" " );
-			}	
+			}
 		}
 		
 		return new ClientConnection(socket);
