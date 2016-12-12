@@ -2,6 +2,7 @@ package main.java.dfs.message.request;
 
 import java.math.BigInteger;
 
+import main.java.dfs.ClientConnection;
 import main.java.dfs.message.Message;
 
 public class CommitMessage implements Message {
@@ -9,10 +10,12 @@ public class CommitMessage implements Message {
 	
 	private BigInteger transcationID = null;
 	private BigInteger sequenceNumber = null;
+	private ClientConnection client = null;
 	
-	public CommitMessage(BigInteger transcationID, BigInteger sequenceNumber) {
+	public CommitMessage(BigInteger transcationID, BigInteger sequenceNumber, ClientConnection client) {
 		this.transcationID = transcationID;
 		this.sequenceNumber = sequenceNumber;
+		this.client = client;
 	}
 
 	@Override
