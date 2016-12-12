@@ -10,7 +10,7 @@ import java.net.Socket;
 import java.net.SocketException;
 
 public class ClientConnection {
-	private InputStream inStream = null;
+	private BufferedReader inStream = null;
 	private OutputStream outStream = null;
 	
 	private Socket socket = null;
@@ -21,7 +21,7 @@ public class ClientConnection {
 		this.socket = socket;
 		
 		try {
-			inStream = socket.getInputStream();
+			inStream = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			outStream = new DataOutputStream(socket.getOutputStream());
 		} catch (IOException e) {
 			System.out.println("ERROR creating read/write streams for client");
@@ -33,30 +33,38 @@ public class ClientConnection {
 		
 		byte buffer[] = new byte[BUFFER_LENGTH];
 		String message = "";
-		int bytesRead = 0;
 		
-		do {
-			bytesRead = 0;
+		System.out.println("starting to read network msg");
+		
+
+		try {
+			// read header
+			message = inStream.readLine();
+			// squash a line to remove /r/n/r/n that seperates data length from data.
+			inStream.readLine();
+			// read data
+			String data = inStream.readLine();
+			message += "\r\n\r\n" + data;
+			
+		} catch (SocketException e) {					
+			System.out.println("pipe broken");
 			try {
-				bytesRead = inStream.read(buffer, 0, buffer.length);
-				if(bytesRead > -1) {
-					message += new String(buffer, 0, bytesRead);
-				}
-				
-			} catch (SocketException e) {					
-				System.out.println("pipe broken");
-				try {
-					socket.close();
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				break;
-			} catch (IOException e) {
-				e.printStackTrace();
-				break;
+				socket.close();
+			} catch (IOException e1) {
+				e1.printStackTrace();
 			}
-		} while(bytesRead > 0);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+
 						
 		return message;
+	}
+	
+	public void sendMessage(String message) throws IOException {
+		outStream.write(message.getBytes());
+		outStream.flush();
+		outStream.flush();
 	}
 }
