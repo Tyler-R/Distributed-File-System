@@ -11,9 +11,9 @@ public class Main {
 		System.out.println("For example: ./server 127.0.0.1 8080 /mnt/test");
 	}
 	
-	public static Message parseMessage(byte message[], ClientConnection connection) {
+	public static Message parseMessage(String message, ClientConnection connection) {
 		System.out.println("---------------------------------------------------------\n"
-				+ "RECEIVED: message with length: " + message.length);
+				+ "RECEIVED: message with length: " + message.length());
 		
 		String parsedMessageHeaderAndData[] = new String(message).split("\r\n\r\n");
 		
@@ -26,11 +26,11 @@ public class Main {
 			System.out.println("Error: Input from client is not in correct format. Length is " + header.length + " when it should be 4");
 			
 			// get more data from connection and add it to current message 
-			byte moreData[] = connection.getMessage();
-			if(moreData.length != 0) {
-				System.out.println(moreData.length + " bytes were added");
+			String moreData = connection.getMessage();
+			if(moreData.length() != 0) {
+				System.out.println(moreData.length() + " bytes were added");
 				String newMessage = (new String(message) + new String(moreData));
-				parseMessage(newMessage.getBytes(), connection);
+				parseMessage(newMessage, connection);
 			}
 			return null;
 			

@@ -15,6 +15,8 @@ public class ClientConnection {
 	
 	private Socket socket = null;
 	
+	public static final int BUFFER_LENGTH = 4096
+	
 	public ClientConnection(Socket socket) {
 		this.socket = socket;
 		
@@ -26,19 +28,19 @@ public class ClientConnection {
 		}
 	}
 
-	
-	public byte[] getMessage() {
+	/*Receives an arbitrarily length message*/
+	public String getMessage() {
 		
-		byte buffer[] = new byte[4096];
+		byte buffer[] = new byte[BUFFER_LENGTH];
+		String message = "";
 		int bytesRead = 0;
-		int totalBytesRead = 0;
 		
 		do {
 			bytesRead = 0;
 			try {
-				bytesRead = inStream.read(buffer);
+				bytesRead = inStream.read(buffer, 0, buffer.length);
 				if(bytesRead > -1) {
-					totalBytesRead += bytesRead;
+					message += new String(buffer, 0, bytesRead);
 				}
 				
 			} catch (SocketException e) {					
@@ -54,10 +56,7 @@ public class ClientConnection {
 				break;
 			}
 		} while(bytesRead > 0);
-		
-		byte bufferCopy[] = new byte[totalBytesRead];
-		
-		System.arraycopy(buffer, 0, bufferCopy, 0, totalBytesRead);
-		return bufferCopy;
+						
+		return message;
 	}
 }
