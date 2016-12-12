@@ -4,13 +4,13 @@ import java.math.BigInteger;
 
 import main.java.dfs.message.Message;
 
-public class Abort implements Message {
+public class AbortMessage implements Message {
 
-	public static final String METHOD_ID = "ABORD";
+	public static final String METHOD_ID = "ABORT";
 	
 	private BigInteger transactionID = null;
 	
-	public Abort(BigInteger transactionID) {
+	public AbortMessage(BigInteger transactionID) {
 		this.transactionID = transactionID;
 	}
 	

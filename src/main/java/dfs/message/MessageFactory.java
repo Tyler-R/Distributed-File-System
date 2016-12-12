@@ -2,6 +2,7 @@ package main.java.dfs.message;
 
 import java.math.BigInteger;
 
+import main.java.dfs.message.request.AbortMessage;
 import main.java.dfs.message.request.CommitMessage;
 import main.java.dfs.message.request.NewTransactionMessage;
 import main.java.dfs.message.request.ReadMessage;
@@ -49,6 +50,10 @@ public abstract class MessageFactory {
 		} else if(method.equals(CommitMessage.METHOD_ID)) {
 			
 			message = new CommitMessage(parsedTransactionID, parsedSequenceNumber);
+		
+		} else if(method.equals(AbortMessage.METHOD_ID)) {
+			
+			message = new AbortMessage(parsedTransactionID);
 		
 		}
 		
