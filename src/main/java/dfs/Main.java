@@ -1,11 +1,72 @@
 package main.java.dfs;
 
+import main.java.dfs.message.Message;
+import main.java.dfs.message.MessageFactory;
+
 public class Main {
 	
 	
 	public static void printHelpMessage() {
 		System.out.println("ERROR server must take 3 arguments: ./server <ipAddress> <port> <directory>");
 		System.out.println("For example: ./server 127.0.0.1 8080 /mnt/test");
+	}
+	
+	public static Message parseMessage(byte message[], ClientConnection connection) {
+		System.out.println("---------------------------------------------------------\n"
+				+ "RECEIVED: message with length: " + message.length);
+		
+		String parsedMessageHeaderAndData[] = new String(message).split("\r\n\r\n");
+		
+		
+		System.out.println("Full Message: \n" + new String(message));
+		String header[] = parsedMessageHeaderAndData[0].split(" ");
+		System.out.println("header length: " + header.length);
+		
+		if(header.length != 4) {
+			System.out.println("Error: Input from client is not in correct format. Length is " + header.length + " when it should be 4");
+			
+			// get more data from connection and add it to current message 
+			byte moreData[] = connection.getMessage();
+			if(moreData.length != 0) {
+				System.out.println(moreData.length + " bytes were added");
+				String newMessage = (new String(message) + new String(moreData));
+				parseMessage(newMessage.getBytes(), connection);
+			}
+			return null;
+			
+		}
+		
+		String method = header[0];
+		String transactionID = header[1];
+		String sequenceNumber = header[2];
+		String contentLength = header[3];
+		
+		// start at 1 so that you do not add the header to the data.
+		StringBuilder dataBuilder = new StringBuilder();
+		for(int i = 1; i < parsedMessageHeaderAndData.length; i++) {
+			dataBuilder.append(parsedMessageHeaderAndData[i]);
+		}
+		
+		if(dataBuilder.length() < Integer.valueOf(contentLength)) {
+			System.out.println("ERROR: data too short, get more.  Data was length " + dataBuilder.length());
+		}
+		
+		String data = dataBuilder.substring(0, Integer.valueOf(contentLength));
+		
+		
+		
+		System.out.println("method: " + method);
+		System.out.println("transactionID: " + transactionID);
+		System.out.println("sequenceNumber: " + sequenceNumber);
+		System.out.println("contentLength: " + contentLength);
+		System.out.println("data length: " + data.length());
+		System.out.println("data: " + data);
+		
+		Message requestMessage = MessageFactory.makeRequestMessage(method, transactionID, sequenceNumber, data);
+		
+		System.out.println("---------------------------------------------------------");
+		
+		return requestMessage;
 	}
 	
 	public static void main(String args[]) {
@@ -27,8 +88,13 @@ public class Main {
 		
 		Network network = new Network(ipAddress, port);
 		
-		ClientConnection connection = network.getClientConnection();
-		connection.listen();
 		
+		while(true) {
+			
+			ClientConnection connection = network.getClientConnection();
+			System.out.println("RECEIVED CONNECTION:");
+			parseMessage(connection.getMessage(), connection);
+
+		}
 	}
 }
