@@ -2,6 +2,9 @@ package main.java.dfs;
 
 import main.java.dfs.message.Message;
 import main.java.dfs.message.MessageFactory;
+import main.java.dfs.message.request.NewTransactionMessage;
+import main.java.dfs.message.request.WriteMessage;
+import main.java.dfs.message.response.ErrorMessage;
 
 public class Main {
 	
@@ -30,10 +33,11 @@ public class Main {
 			if(moreData.length() != 0) {
 				System.out.println(moreData.length() + " bytes were added");
 				String newMessage = (new String(message) + new String(moreData));
-				parseMessage(newMessage, connection);
+				return parseMessage(newMessage, connection);
+			} else {
+				return null;
+
 			}
-			return null;
-			
 		}
 		
 		String method = header[0];
@@ -62,7 +66,7 @@ public class Main {
 		System.out.println("data length: " + data.length());
 		System.out.println("data: " + data);
 		
-		Message requestMessage = MessageFactory.makeRequestMessage(method, transactionID, sequenceNumber, data);
+		Message requestMessage = MessageFactory.makeRequestMessage(method, transactionID, sequenceNumber, data, connection);
 		
 		System.out.println("---------------------------------------------------------");
 		
@@ -85,6 +89,7 @@ public class Main {
 			System.exit(1);
 		}
 		String fileSystemDirectory = args[2];
+		AtomicFile.directory = fileSystemDirectory;
 		
 		Network network = new Network(ipAddress, port);
 		
@@ -93,7 +98,9 @@ public class Main {
 			
 			ClientConnection connection = network.getClientConnection();
 			System.out.println("RECEIVED CONNECTION:");
-			parseMessage(connection.getMessage(), connection);
+			Message message = parseMessage(connection.getMessage(), connection);
+			
+			message.execute();
 
 		}
 	}
