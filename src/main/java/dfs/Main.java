@@ -81,10 +81,11 @@ public class Main {
 			ClientConnection connection = network.getClientConnection();
 			System.out.println("RECEIVED CONNECTION:");
 			NetworkMessage networkMessage = connection.getMessage();
-			
-			Message message = parseMessage(networkMessage.header, networkMessage.data, connection);
-			
-			message.execute();
+			if(networkMessage != null) {
+				Message message = parseMessage(networkMessage.header, networkMessage.data, connection);
+				
+				message.execute();
+			}
 
 		}
 	}
