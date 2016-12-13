@@ -1,5 +1,7 @@
 package main.java.dfs;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentSkipListSet;
@@ -62,7 +64,7 @@ public class Transaction {
 		return null; 
 	}
 	
-	public String getWriteMessage() {
+	private String getWriteMessage() {
 		
 		String message = "";
 		for(WriteMessage writeMessage : writeMessages) {
@@ -70,6 +72,22 @@ public class Transaction {
 		}
 		
 		return message;
+	}
+
+	public void writeMessageToDisk() {
+		String message = getWriteMessage();
+		
+		AtomicFile file = new AtomicFile(fileName);
+		try {
+			file.append(message);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 	
 	
