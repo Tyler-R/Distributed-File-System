@@ -7,6 +7,8 @@ import java.math.BigInteger;
 import main.java.dfs.AtomicFile;
 import main.java.dfs.ClientConnection;
 import main.java.dfs.message.Message;
+import main.java.dfs.message.MessageFactory;
+import main.java.dfs.message.response.ErrorCode;
 
 public class ReadMessage implements Message{
 
@@ -28,17 +30,24 @@ public class ReadMessage implements Message{
 		try {
 			content = file.read();
 			try {
-				System.out.println("sending msg to client");
 				client.sendMessage(content);
 			} catch(Exception e) {
-				// there was an issue writing to the client
 				System.out.println("ERROR sending response message to client. TCP pipe is probably broken.");
 			}
-			System.out.println("file content: " + content);
+
+		
 		} catch(FileNotFoundException e) {
-			System.out.println("FILE NOT FOUND: RETURN ERROR");
+			Message errorMessage = 
+					MessageFactory.makeResponseMessage("ERROR", "-1", "0", ErrorCode.FILE_NOT_FOUND, 
+					"Could not read \"" + fileName + "\" as it does not exist on the server\n", client);
+			
+			errorMessage.execute();
 		} catch(IOException e) {
-			System.out.println("IO EXCEPTION: RETURN ERROR");
+			Message errorMessage = 
+					MessageFactory.makeResponseMessage("ERROR", "-1", "0", ErrorCode.FILE_NOT_FOUND, 
+							"error reading \"" + fileName + "\" because: " + e.getMessage() + "\n", client);
+			
+			errorMessage.execute();
 		}
 		
 		
