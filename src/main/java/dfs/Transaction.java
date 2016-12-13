@@ -23,7 +23,7 @@ public class Transaction {
 		this.fileName = fileName;
 	}
 
-	public Object getTransactionID() {
+	public BigInteger getTransactionID() {
 		return transactionID;
 	}
 
