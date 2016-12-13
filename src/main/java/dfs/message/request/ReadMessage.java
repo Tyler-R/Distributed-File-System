@@ -31,10 +31,9 @@ public class ReadMessage implements Message{
 			content = file.read();
 			try {
 				client.sendMessage(content);
-			} catch(Exception e) {
+			} catch(IOException e) {
 				System.out.println("ERROR sending response message to client. TCP pipe is probably broken.");
 			}
-
 		
 		} catch(FileNotFoundException e) {
 			Message errorMessage = 
