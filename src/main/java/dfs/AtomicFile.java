@@ -4,10 +4,12 @@ import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.SocketException;
 import java.nio.channels.FileLock;
+import java.util.concurrent.locks.Lock;
 
 public class AtomicFile {
 	
@@ -20,8 +22,23 @@ public class AtomicFile {
 		this.fileName = fileName;
 	}
 	
-	public void Append(String data) {
+	public void append(String data) throws FileNotFoundException, IOException {
+		File file = new File(directory + fileName);
+		FileOutputStream outStream = new FileOutputStream(file);
 		
+		try {
+			FileLock lock = outStream.getChannel().lock();
+			try {
+				outStream.write(data.getBytes());
+				outStream.flush();
+				outStream.flush();
+			} finally {
+				lock.release();
+			}
+		} finally {
+			outStream.close();
+		}
+
 	}
 	
 	public String read() throws FileNotFoundException, IOException {
