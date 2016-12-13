@@ -9,6 +9,7 @@ import main.java.dfs.message.request.NewTransactionMessage;
 import main.java.dfs.message.request.ReadMessage;
 import main.java.dfs.message.request.WriteMessage;
 import main.java.dfs.message.response.AckMessage;
+import main.java.dfs.message.response.AskResendMessage;
 import main.java.dfs.message.response.ErrorCode;
 import main.java.dfs.message.response.ErrorMessage;
 
@@ -71,7 +72,9 @@ public abstract class MessageFactory {
 			message = new ErrorMessage(transactionID, sequenceNumber, errorCode, reason, connection);
 		} else if(method.equals(AckMessage.METHOD_ID)) {
 			message = new AckMessage(transactionID, sequenceNumber, connection);
-		} 
+		} else if(method.equals(AskResendMessage.METHOD_ID)) {
+			message = new AskResendMessage(transactionID, sequenceNumber, connection);
+		}
 		
 		return message;
 	}
