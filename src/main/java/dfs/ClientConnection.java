@@ -15,8 +15,6 @@ public class ClientConnection {
 	
 	private Socket socket = null;
 	
-	public static final int BUFFER_LENGTH = 4096;
-	
 	public ClientConnection(Socket socket) {
 		this.socket = socket;
 		
@@ -29,23 +27,27 @@ public class ClientConnection {
 	}
 
 	/*Receives an arbitrarily length message*/
-	public String getMessage() {
-		
-		byte buffer[] = new byte[BUFFER_LENGTH];
-		String message = "";
-		
-		System.out.println("starting to read network msg");
-		
+	public NetworkMessage getMessage() {
+				
 
 		try {
-			// read header
-			message = inStream.readLine();
-			// squash a line to remove /r/n/r/n that seperates data length from data.
+			NetworkMessage message = new NetworkMessage();
+			StringBuilder data = new StringBuilder();
+			
+			// read header until the first /r/n/
+			message.header = inStream.readLine();
+			// squash the second /r/n line that separates data length from data.
 			inStream.readLine();
-			// read data
-			String data = inStream.readLine();
-			// add back on data and newline buffer to message
-			message += "\r\n\r\n" + data;
+			data.append(inStream.readLine());
+			
+			while(inStream.ready()) {
+				char character = (char) inStream.read();
+				data.append(character);
+			}
+			
+			message.data = data.toString();
+			
+			return message;
 			
 		} catch (SocketException e) {					
 			System.out.println("pipe broken");
@@ -60,7 +62,7 @@ public class ClientConnection {
 		
 
 						
-		return message;
+		return null;
 	}
 	
 	public void sendMessage(String message) throws IOException {

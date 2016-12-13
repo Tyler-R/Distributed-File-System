@@ -14,48 +14,30 @@ public class Main {
 		System.out.println("For example: ./server 127.0.0.1 8080 /mnt/test");
 	}
 	
-	public static Message parseMessage(String message, ClientConnection connection) {
-		System.out.println("---------------------------------------------------------\n"
-				+ "RECEIVED: message with length: " + message.length());
+	public static Message parseMessage(String header, String data, ClientConnection connection) {
+		System.out.println("---------------------------------------------------------");
+				
 		
-		String parsedMessageHeaderAndData[] = new String(message).split("\r\n\r\n");
+		String parsedHeader[] = header.split(" ");
+		System.out.println("header elements: " + parsedHeader.length);
 		
-		
-		System.out.println("Full Message: \n" + new String(message));
-		String header[] = parsedMessageHeaderAndData[0].split(" ");
-		System.out.println("header length: " + header.length);
-		
-		if(header.length != 4) {
-			System.out.println("Error: Input from client is not in correct format. Length is " + header.length + " when it should be 4");
+		if(parsedHeader.length != 4) {
+			System.out.println("Error: Input from client is not in correct format. Length is " + parsedHeader.length + " when it should be 4");
 			
-			// get more data from connection and add it to current message 
-			String moreData = connection.getMessage();
-			if(moreData.length() != 0) {
-				System.out.println(moreData.length() + " bytes were added");
-				String newMessage = (new String(message) + new String(moreData));
-				return parseMessage(newMessage, connection);
-			} else {
-				return null;
-
-			}
+			// should return an error
+			return null;
 		}
 		
-		String method = header[0];
-		String transactionID = header[1];
-		String sequenceNumber = header[2];
-		String contentLength = header[3];
+		String method = parsedHeader[0];
+		String transactionID = parsedHeader[1];
+		String sequenceNumber = parsedHeader[2];
+		String contentLength = parsedHeader[3];
 		
-		// start at 1 so that you do not add the header to the data.
-		StringBuilder dataBuilder = new StringBuilder();
-		for(int i = 1; i < parsedMessageHeaderAndData.length; i++) {
-			dataBuilder.append(parsedMessageHeaderAndData[i]);
+		if(data.length() < Integer.valueOf(contentLength)) {
+			System.out.println("ERROR: data too short, get more.  Data was length " + data.length() + " when it should be " + Integer.valueOf(contentLength));
 		}
 		
-		if(dataBuilder.length() < Integer.valueOf(contentLength)) {
-			System.out.println("ERROR: data too short, get more.  Data was length " + dataBuilder.length());
-		}
-		
-		String data = dataBuilder.substring(0, Integer.valueOf(contentLength));
+//		String data = dataBuilder.substring(0, Integer.valueOf(contentLength) - 1);
 		
 		
 		
@@ -98,7 +80,9 @@ public class Main {
 			
 			ClientConnection connection = network.getClientConnection();
 			System.out.println("RECEIVED CONNECTION:");
-			Message message = parseMessage(connection.getMessage(), connection);
+			NetworkMessage networkMessage = connection.getMessage();
+			
+			Message message = parseMessage(networkMessage.header, networkMessage.data, connection);
 			
 			message.execute();
 
