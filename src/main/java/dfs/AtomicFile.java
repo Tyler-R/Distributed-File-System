@@ -24,7 +24,7 @@ public class AtomicFile {
 	
 	public void append(String data) throws FileNotFoundException, IOException {
 		File file = new File(directory + fileName);
-		FileOutputStream outStream = new FileOutputStream(file);
+		FileOutputStream outStream = new FileOutputStream(file, true);
 		
 		try {
 			FileLock lock = outStream.getChannel().lock();
