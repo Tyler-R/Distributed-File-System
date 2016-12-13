@@ -8,6 +8,7 @@ import main.java.dfs.message.request.CommitMessage;
 import main.java.dfs.message.request.NewTransactionMessage;
 import main.java.dfs.message.request.ReadMessage;
 import main.java.dfs.message.request.WriteMessage;
+import main.java.dfs.message.response.ErrorCode;
 import main.java.dfs.message.response.ErrorMessage;
 
 public abstract class MessageFactory {
@@ -62,28 +63,11 @@ public abstract class MessageFactory {
 		
 	}
 	
-	public Message makeResponseMessage(String method, String transactionID, String sequenceNumber, String ErrorCode, String reason) {
+	public static Message makeResponseMessage(String method, String transactionID, String sequenceNumber, ErrorCode errorCode, String reason, ClientConnection connection) {
 		Message message = null;
 		
-		BigInteger parsedTransactionID = null;
-		BigInteger parsedSequenceNumber = null;
-		
-		try {
-			parsedTransactionID = new BigInteger(transactionID);
-		} catch(NumberFormatException e) {
-			System.out.println("transaction ID message: " + e.getMessage());
-			System.out.println("transaction ID not parsable because: " + e.getCause().getMessage());
-		}
-		
-		try {
-			parsedSequenceNumber = new BigInteger(sequenceNumber);
-		} catch(NumberFormatException e) {
-			System.out.println("sequenceNumber message: " + e.getMessage());
-			System.out.println("sequenceNumber not parsable because: " + e.getCause().getMessage());
-		}
-		
 		if(method.equals(ErrorMessage.METHOD_ID)) {
-			message = new ErrorMessage();
+			message = new ErrorMessage(transactionID, sequenceNumber, errorCode, reason, connection);
 		}
 		
 		return message;
