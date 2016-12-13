@@ -25,6 +25,7 @@ public class TransactionManager {
 		long newTransactionID = currentTransactionIDCounter.incrementAndGet();
 		
 		Transaction transaction = new Transaction(BigInteger.valueOf(newTransactionID), fileName);
+		transactions.add(transaction);
 		
 		return transaction;
 		
