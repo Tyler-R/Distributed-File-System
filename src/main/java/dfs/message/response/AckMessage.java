@@ -41,7 +41,7 @@ public class AckMessage implements Message {
 		} catch (IOException e) {
 			System.out.println("Could not send ACK message for transactionID: (" 
 					+ transactionID + ") and sequenceNumber: (" + sequenceNumber 
-					+ "). TCP pipe is likely broken." );
+					+ "). IO exception \"" + e.getMessage() + "\" occured, which is likely a broken TCP pipe.");
 		}
 	}
 }
