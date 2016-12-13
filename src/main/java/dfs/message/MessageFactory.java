@@ -42,19 +42,19 @@ public abstract class MessageFactory {
 			
 		} else if(method.equals(NewTransactionMessage.METHOD_ID)) {
 			
-			message = new NewTransactionMessage(parsedTransactionID, parsedSequenceNumber, data);
+			message = new NewTransactionMessage(parsedTransactionID, parsedSequenceNumber, data, connection);
 			
 		} else if(method.equals(WriteMessage.METHOD_ID)) {
 			
-			message = new WriteMessage(parsedTransactionID, parsedSequenceNumber, data);
+			message = new WriteMessage(parsedTransactionID, parsedSequenceNumber, data, connection);
 			
 		} else if(method.equals(CommitMessage.METHOD_ID)) {
 			
-			message = new CommitMessage(parsedTransactionID, parsedSequenceNumber);
+			message = new CommitMessage(parsedTransactionID, parsedSequenceNumber, connection);
 		
 		} else if(method.equals(AbortMessage.METHOD_ID)) {
 			
-			message = new AbortMessage(parsedTransactionID);
+			message = new AbortMessage(parsedTransactionID, connection);
 		
 		}
 		
