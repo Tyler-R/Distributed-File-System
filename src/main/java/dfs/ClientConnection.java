@@ -65,6 +65,21 @@ public class ClientConnection {
 		return null;
 	}
 	
+	public String getData() {
+		StringBuilder data = new StringBuilder();
+		
+		try {
+			while(inStream.ready()) {
+				char character = (char) inStream.read();
+				data.append(character);
+			}
+		} catch (IOException e) {
+			System.out.println("IO error occured when trying to read extra data from connection.");
+		}
+		
+		return data.toString();
+	}
+	
 	public void sendMessage(String message) throws IOException {
 		outStream.write(message.getBytes());
 		outStream.flush();
