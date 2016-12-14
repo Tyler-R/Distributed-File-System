@@ -34,6 +34,10 @@ public class Transaction {
 	public BigInteger getTransactionID() {
 		return transactionID;
 	}
+	
+	public void abort() {
+		status = TransactionStatus.ABORTED;
+	}
 
 	public void addWriteOperation(WriteMessage newMessage) throws DuplicateMessageException {
 				

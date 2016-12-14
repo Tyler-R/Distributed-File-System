@@ -3,7 +3,13 @@ package main.java.dfs.message.request;
 import java.math.BigInteger;
 
 import main.java.dfs.ClientConnection;
+import main.java.dfs.Transaction;
+import main.java.dfs.TransactionManager;
+import main.java.dfs.TransactionStatus;
 import main.java.dfs.message.Message;
+import main.java.dfs.message.response.AckMessage;
+import main.java.dfs.message.response.ErrorCode;
+import main.java.dfs.message.response.ErrorMessage;
 
 public class AbortMessage implements Message {
 
@@ -20,6 +26,46 @@ public class AbortMessage implements Message {
 	
 	@Override
 	public void execute() {
+		TransactionManager transactionManager = TransactionManager.getInstance();
+		Transaction transaction = transactionManager.getTransaction(transactionID);
+		
+		// transactionID should be one of the active transactionID's.
+		// transaction is null when the writes transactionID is not the same as a open transaction
+		if(transaction == null) {
+			Message response = new ErrorMessage(
+					transactionID.toString(), ErrorCode.INVALID_TRANSACTION_ID,
+					"Transaction with ID (" + transactionID.toString() + ") does not exist",
+					client);
+			
+			response.execute();
+			return;
+		}
+		
+		// cannot abort a transaction that has previously been aborted or committed.
+		TransactionStatus status = transaction.getStatus();
+		if(status == TransactionStatus.COMMITTED) {
+			Message response = new ErrorMessage(
+					transactionID.toString(), ErrorCode.INVALID_OPERATION,
+					"Transaction with ID (" + transactionID.toString() + ") was commited already, so it cannot be aborted",
+					client);
+			
+			response.execute();
+			return;
+		} else if(status == TransactionStatus.ABORTED) {
+			Message response = new ErrorMessage(
+					transactionID.toString(), ErrorCode.INVALID_OPERATION,
+					"Transaction with ID (" + transactionID.toString() + ") was aborted already, so it cannot be aborted again",
+					client);
+			
+			response.execute();
+			return;
+		}
+		
+		
+		transaction.abort();
+		
+		Message response = new AckMessage(transactionID.toString(), "0", client);
+		response.execute();
 		
 	}
 	
