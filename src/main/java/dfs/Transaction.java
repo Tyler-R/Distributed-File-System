@@ -18,9 +18,15 @@ public class Transaction {
 	private BigInteger transactionID = null;
 	private String fileName = "";
 	
+	private TransactionStatus status = TransactionStatus.IN_PROGRESS;
+	
 	public Transaction(BigInteger transactionID, String fileName) {
 		this.transactionID = transactionID;
 		this.fileName = fileName;
+	}
+	
+	public String getFileName() {
+		return fileName;
 	}
 
 	public BigInteger getTransactionID() {
@@ -74,20 +80,19 @@ public class Transaction {
 		return message;
 	}
 
-	public void writeMessageToDisk() {
+	public void writeMessageToDisk() throws FileNotFoundException, IOException {
 		String message = getWriteMessage();
 		
 		AtomicFile file = new AtomicFile(fileName);
-		try {
-			file.append(message);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+
+		file.append(message);
 		
+		status = TransactionStatus.COMMITTED;
+
+	}
+
+	public TransactionStatus getStatus() {
+		return status;
 	}
 	
 	
