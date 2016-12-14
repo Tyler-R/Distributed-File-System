@@ -19,7 +19,7 @@ public class ErrorMessage implements Message {
 		this.transactionID = transactionID;
 		this.sequenceNumber = "0";
 		this.errorCode = errorCode.getCode();
-		this.reason = reason;
+		this.reason = reason + "\n";
 		this.client = client;
 	}
 	
