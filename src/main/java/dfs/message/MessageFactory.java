@@ -27,15 +27,17 @@ public abstract class MessageFactory {
 		try {
 			parsedTransactionID = new BigInteger(transactionID);
 		} catch(NumberFormatException e) {
-			System.out.println("transaction ID message: " + e.getMessage());
-			System.out.println("transaction ID not parsable because: " + e.getCause().getMessage());
+			return new ErrorMessage(transactionID, ErrorCode.INVALID_TRANSACTION_ID, 
+					"Unable to parse transaction ID (" + transactionID + ") into a number.", 
+					connection);
 		}
 		
 		try {
 			parsedSequenceNumber = new BigInteger(sequenceNumber);
 		} catch(NumberFormatException e) {
-			System.out.println("sequenceNumber message: " + e.getMessage());
-			System.out.println("sequenceNumber not parsable because: " + e.getCause().getMessage());
+			return new ErrorMessage(parsedTransactionID.toString(), ErrorCode.INVALID_OPERATION,
+					"Unable to parse sequence number (" + sequenceNumber + ") into a number.", 
+					connection);
 		}
 		
 		
