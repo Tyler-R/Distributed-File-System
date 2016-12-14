@@ -15,9 +15,9 @@ public class ErrorMessage implements Message {
 	private String reason = "";
 	private ClientConnection client = null;
 	
-	public ErrorMessage(String transactionID, String sequenceNumber, ErrorCode errorCode, String reason, ClientConnection client) {
+	public ErrorMessage(String transactionID, ErrorCode errorCode, String reason, ClientConnection client) {
 		this.transactionID = transactionID;
-		this.sequenceNumber = sequenceNumber;
+		this.sequenceNumber = "0";
 		this.errorCode = errorCode.getCode();
 		this.reason = reason;
 		this.client = client;

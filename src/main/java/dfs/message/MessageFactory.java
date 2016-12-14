@@ -69,7 +69,7 @@ public abstract class MessageFactory {
 		Message message = null;
 		
 		if(method.equals(ErrorMessage.METHOD_ID)) {
-			message = new ErrorMessage(transactionID, sequenceNumber, errorCode, reason, connection);
+			message = new ErrorMessage(transactionID, errorCode, reason, connection);
 		} else if(method.equals(AckMessage.METHOD_ID)) {
 			message = new AckMessage(transactionID, sequenceNumber, connection);
 		} else if(method.equals(AskResendMessage.METHOD_ID)) {
