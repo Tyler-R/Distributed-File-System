@@ -38,21 +38,18 @@ public class CommitMessage implements Message {
 		if(transaction == null) {
 			Message response = new ErrorMessage(
 					transactionID.toString(), ErrorCode.INVALID_TRANSACTION_ID,
-					"Transaction with ID (" + transactionID.toString() + ") does not exist",
+					"Transaction with ID (" + transactionID.toString() + ") does not exist. Commit could not be executed.",
 					client);
 			
 			response.execute();
 			return;
 		}
-
-		// cannot commit a transaction that has already been commited, or has previously been aborted.
+		
+		// if a client loses an ACK messsage the server must send a new ACK message
+		// cannot commit a transaction that has has previously been aborted.
 		TransactionStatus status = transaction.getStatus();
 		if(status == TransactionStatus.COMMITTED) {
-			Message response = new ErrorMessage(
-					transactionID.toString(), ErrorCode.INVALID_OPERATION,
-					"Transaction with ID (" + transactionID.toString() + ") has already been committed",
-					client);
-			
+			Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
 			response.execute();
 			return;
 		} else if(status == TransactionStatus.ABORTED) {
@@ -90,7 +87,7 @@ public class CommitMessage implements Message {
 				return;
 			}
 
-			Message response = new AckMessage(transactionID.toString(), "0", client);
+			Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
 			response.execute();
 			return;
 			
