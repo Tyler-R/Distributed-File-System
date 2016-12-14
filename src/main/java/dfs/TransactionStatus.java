@@ -4,6 +4,7 @@ public enum TransactionStatus {
 	IN_PROGRESS,
 	COMMIT_WHEN_ALL_WRITES_RECEIVED,
 	COMMITTED,
-	ABORTED;
+	ABORTED, 
+	TIMER_EXPIRED;
 
 }

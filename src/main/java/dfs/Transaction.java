@@ -6,6 +6,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentSkipListSet;
 
+import javax.swing.Timer;
+
 import main.java.dfs.message.Message;
 import main.java.dfs.message.request.CommitMessage;
 import main.java.dfs.message.request.WriteMessage;
@@ -22,9 +24,23 @@ public class Transaction {
 	
 	private TransactionStatus status = TransactionStatus.IN_PROGRESS;
 	
+	private static final int TIMER_DELAY_IN_MILLISECONDS = 3000;
+	
+	private Timer timer = new Timer(TIMER_DELAY_IN_MILLISECONDS, (e) -> {
+		synchronized(this) {
+			if(status == TransactionStatus.IN_PROGRESS) {
+				status = TransactionStatus.TIMER_EXPIRED;
+				System.out.println("Trannsaction with ID (" + transactionID.toString() + ") timed out");
+			}
+			this.timer.stop();
+		}
+	});
+	
 	public Transaction(BigInteger transactionID, String fileName) {
 		this.transactionID = transactionID;
 		this.fileName = fileName;
+		
+		timer.start();
 	}
 	
 	public String getFileName() {
@@ -36,11 +52,17 @@ public class Transaction {
 	}
 	
 	public void abort() {
-		status = TransactionStatus.ABORTED;
+		timer.stop();
+		
+		if(status == TransactionStatus.IN_PROGRESS) {
+			status = TransactionStatus.ABORTED;
+		}
 	}
 
 	public void addWriteOperation(WriteMessage newMessage) throws DuplicateMessageException {
-				
+		timer.restart();
+		
+		
 		if(!writeMessages.add(newMessage)) {
 			// could not add message to set
 			throw new DuplicateMessageException();
@@ -76,6 +98,8 @@ public class Transaction {
 	}
 	
 	public ArrayList<BigInteger> getMissingWritesSequenceNumbers(BigInteger expectedSize) {
+		timer.restart();
+		
 		int numberOfWritesMissed = expectedSize.subtract(BigInteger.valueOf(writeMessages.size())).intValue();
 		
 		if(numberOfWritesMissed > 0) {
@@ -114,13 +138,17 @@ public class Transaction {
 	}
 
 	public void writeMessageToDisk() throws FileNotFoundException, IOException {
-		String message = getWriteMessage();
+		timer.stop();
 		
-		AtomicFile file = new AtomicFile(fileName);
-
-		file.append(message);
-		
-		status = TransactionStatus.COMMITTED;
+		if(status == TransactionStatus.IN_PROGRESS) {
+			String message = getWriteMessage();
+			
+			AtomicFile file = new AtomicFile(fileName);
+	
+			file.append(message);
+			
+			status = TransactionStatus.COMMITTED;
+		}
 
 	}
 
@@ -129,10 +157,8 @@ public class Transaction {
 	}
 
 	public void setCommitMessage(CommitMessage commitMessage) {
-		
 		this.commitMessage = commitMessage;
 		status = TransactionStatus.COMMIT_WHEN_ALL_WRITES_RECEIVED;
-
 	}
 	
 	
