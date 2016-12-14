@@ -54,15 +54,16 @@ public class NewTransactionMessage implements Message {
 		}
 		
 		TransactionManager manager = TransactionManager.getInstance();
-		
 		Transaction newTransaction = manager.startNewTransaction(fileName);
+		synchronized(newTransaction) {
 		
-		Message response = MessageFactory.makeResponseMessage(
-				AckMessage.METHOD_ID, 
-				newTransaction.getTransactionID().toString(), 
-				"0", ErrorCode.ACK, "", client);
-		
-		response.execute();
+			Message response = MessageFactory.makeResponseMessage(
+					AckMessage.METHOD_ID, 
+					newTransaction.getTransactionID().toString(), 
+					"0", ErrorCode.ACK, "", client);
+			
+			response.execute();
+		}
 		
 	}
 }
