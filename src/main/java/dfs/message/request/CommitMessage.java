@@ -58,7 +58,7 @@ public class CommitMessage implements Message {
 		} else if(status == TransactionStatus.ABORTED) {
 			Message response = new ErrorMessage(
 					transactionID.toString(), ErrorCode.INVALID_OPERATION,
-					"Transaction with ID (" + transactionID.toString() + ") was aborted and so it cannot be aborted",
+					"Transaction with ID (" + transactionID.toString() + ") was aborted and so it cannot be committed",
 					client);
 			
 			response.execute();
