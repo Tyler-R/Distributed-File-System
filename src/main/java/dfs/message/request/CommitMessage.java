@@ -11,6 +11,7 @@ import main.java.dfs.TransactionManager;
 import main.java.dfs.TransactionStatus;
 import main.java.dfs.message.Message;
 import main.java.dfs.message.response.AckMessage;
+import main.java.dfs.message.response.AskResendMessage;
 import main.java.dfs.message.response.ErrorCode;
 import main.java.dfs.message.response.ErrorMessage;
 
@@ -43,7 +44,7 @@ public class CommitMessage implements Message {
 			response.execute();
 			return;
 		}
-		
+
 		// cannot commit a transaction that has already been commited, or has previously been aborted.
 		TransactionStatus status = transaction.getStatus();
 		if(status == TransactionStatus.COMMITTED) {
@@ -93,8 +94,21 @@ public class CommitMessage implements Message {
 			response.execute();
 			return;
 			
+		} else { // send message to client asking to resent missed write messages
+			transaction.setCommitMessage(this);
+			
+			for (BigInteger missingTransactionID : missingWriteSequenceNumbers) {
+				Message response = new AskResendMessage(transactionID.toString(), missingTransactionID.toString(), client);
+				response.execute();
+			}
+			
+			return;
 		}
 
+	}
+
+	public BigInteger getSequenceNumber() {
+		return sequenceNumber;
 	}
 
 }

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.concurrent.ConcurrentSkipListSet;
 
 import main.java.dfs.message.Message;
+import main.java.dfs.message.request.CommitMessage;
 import main.java.dfs.message.request.WriteMessage;
 
 public class Transaction {
@@ -14,6 +15,7 @@ public class Transaction {
 			new ConcurrentSkipListSet<WriteMessage>(
 					(WriteMessage a, WriteMessage b) -> a.getSequenceNumber().compareTo(b.getSequenceNumber())
 			);
+	private CommitMessage commitMessage = null;
 	
 	private BigInteger transactionID = null;
 	private String fileName = "";
@@ -34,18 +36,44 @@ public class Transaction {
 	}
 
 	public void addWriteOperation(WriteMessage newMessage) throws DuplicateMessageException {
-		
-		BigInteger newMessageSequenceNumber = newMessage.getSequenceNumber();
-		
+				
 		if(!writeMessages.add(newMessage)) {
 			// could not add message to set
 			throw new DuplicateMessageException();
-		}		
+		}
+				
+		if(status == TransactionStatus.COMMIT_WHEN_ALL_WRITES_RECEIVED 
+				&& commitMessage != null
+				&& readyToCommit()) 
+		{
+			// this execute should always succeed.
+			System.out.println("Executing commit because of write");
+			commitMessage.execute();
+		}
+	}
+	
+	private boolean readyToCommit() {
+		
+		if(!commitMessage.getSequenceNumber().equals(BigInteger.valueOf(writeMessages.size()))) {
+			return false;
+		}
+		
+		BigInteger i = BigInteger.valueOf(1);
+		for(WriteMessage message : writeMessages) {
+			if(!message.getSequenceNumber().equals(i)) {
+				return false;
+			}
+			
+			i = i.add(BigInteger.ONE);
+		}
+		
+		return true;
+		
 	}
 	
 	public ArrayList<BigInteger> getMissingWritesSequenceNumbers(BigInteger expectedSize) {
 		int numberOfWritesMissed = expectedSize.subtract(BigInteger.valueOf(writeMessages.size())).intValue();
-
+		
 		if(numberOfWritesMissed > 0) {
 			ArrayList<BigInteger> missingWrites = new ArrayList<BigInteger>(numberOfWritesMissed);
 			
@@ -54,16 +82,17 @@ public class Transaction {
 			for(WriteMessage message : writeMessages) {
 				while(!message.getSequenceNumber().equals(i)) {
 					missingWrites.add(new BigInteger(i.toString()));
-					i.add(BigInteger.ONE);
+					i = i.add(BigInteger.ONE);
 				}
 				
-				i.add(BigInteger.ONE);
+				i = i.add(BigInteger.ONE);
 			}
-			
-			while(!i.equals(expectedSize)) {
+									
+			while(i.compareTo(expectedSize) <= 0) {
 				missingWrites.add(new BigInteger(i.toString()));
+				i = i.add(BigInteger.ONE);
 			}
-			
+						
 			return missingWrites;
 		}
 		
@@ -93,6 +122,13 @@ public class Transaction {
 
 	public TransactionStatus getStatus() {
 		return status;
+	}
+
+	public void setCommitMessage(CommitMessage commitMessage) {
+		
+		this.commitMessage = commitMessage;
+		status = TransactionStatus.COMMIT_WHEN_ALL_WRITES_RECEIVED;
+
 	}
 	
 	
