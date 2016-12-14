@@ -40,32 +40,41 @@ public class AbortMessage implements Message {
 			response.execute();
 			return;
 		}
-		
-		// cannot abort a transaction that has previously been aborted or committed.
-		TransactionStatus status = transaction.getStatus();
-		if(status == TransactionStatus.COMMITTED) {
-			Message response = new ErrorMessage(
-					transactionID.toString(), ErrorCode.INVALID_OPERATION,
-					"Transaction with ID (" + transactionID.toString() + ") was commited already, so it cannot be aborted",
-					client);
+		synchronized(transaction) {
+			// cannot abort a transaction that has previously been aborted or committed.
+			TransactionStatus status = transaction.getStatus();
+			if(status == TransactionStatus.COMMITTED) {
+				Message response = new ErrorMessage(
+						transactionID.toString(), ErrorCode.INVALID_OPERATION,
+						"Transaction with ID (" + transactionID.toString() + ") was commited already, so it cannot be aborted",
+						client);
+				
+				response.execute();
+				return;
+			} else if(status == TransactionStatus.ABORTED) {
+				Message response = new ErrorMessage(
+						transactionID.toString(), ErrorCode.INVALID_OPERATION,
+						"Transaction with ID (" + transactionID.toString() + ") was aborted already, so it cannot be aborted again",
+						client);
+				
+				response.execute();
+				return;
+			} else if(status == TransactionStatus.TIMER_EXPIRED) {
+				Message response = new ErrorMessage(
+						transactionID.toString(), ErrorCode.INVALID_OPERATION,
+						"Transaction with ID (" + transactionID.toString() + ") timed out already, so it cannot be aborted",
+						client);
+				
+				response.execute();
+				return;
+			}
 			
-			response.execute();
-			return;
-		} else if(status == TransactionStatus.ABORTED) {
-			Message response = new ErrorMessage(
-					transactionID.toString(), ErrorCode.INVALID_OPERATION,
-					"Transaction with ID (" + transactionID.toString() + ") was aborted already, so it cannot be aborted again",
-					client);
 			
+			transaction.abort();
+			
+			Message response = new AckMessage(transactionID.toString(), "0", client);
 			response.execute();
-			return;
 		}
-		
-		
-		transaction.abort();
-		
-		Message response = new AckMessage(transactionID.toString(), "0", client);
-		response.execute();
 		
 	}
 	
