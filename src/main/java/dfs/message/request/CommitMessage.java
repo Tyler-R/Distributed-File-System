@@ -45,61 +45,72 @@ public class CommitMessage implements Message {
 			return;
 		}
 		
-		// if a client loses an ACK messsage the server must send a new ACK message
-		// cannot commit a transaction that has has previously been aborted.
-		TransactionStatus status = transaction.getStatus();
-		if(status == TransactionStatus.COMMITTED) {
-			Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
-			response.execute();
-			return;
-		} else if(status == TransactionStatus.ABORTED) {
-			Message response = new ErrorMessage(
-					transactionID.toString(), ErrorCode.INVALID_OPERATION,
-					"Transaction with ID (" + transactionID.toString() + ") was aborted and so it cannot be committed",
-					client);
-			
-			response.execute();
-			return;
-		}
-
-		// sequence number should equal the number writes that have been received
-		ArrayList<BigInteger> missingWriteSequenceNumbers = transaction.getMissingWritesSequenceNumbers(sequenceNumber);
-
-		if (missingWriteSequenceNumbers == null) {
-			try {
-				transaction.writeMessageToDisk();
-			} catch (FileNotFoundException e) {
-				Message response = new ErrorMessage(transactionID.toString(), ErrorCode.FILE_NOT_FOUND, 
-						"Error writing \"" + transaction.getFileName() + "\" to disk because file could not be found. "
-								+ "It is possible the server does not have permissions to write to this directory "
-								+ "or the file path is incorrect. Diagnostic message: " + e.getMessage(), 
+		synchronized(transaction) {
+			// if a client loses an ACK messsage the server must send a new ACK message
+			// cannot commit a transaction that has has previously been aborted.
+			TransactionStatus status = transaction.getStatus();
+			if(status == TransactionStatus.COMMITTED) {
+				Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
+				response.execute();
+				return;
+			} else if(status == TransactionStatus.ABORTED) {
+				Message response = new ErrorMessage(
+						transactionID.toString(), ErrorCode.INVALID_OPERATION,
+						"Transaction with ID (" + transactionID.toString() + ") was aborted and so it cannot be committed",
 						client);
 				
 				response.execute();
 				return;
-				
-			} catch (IOException e) {
-				Message response = new ErrorMessage(transactionID.toString(), ErrorCode.FILE_IO_ERROR, 
-						"could not write \"" + transaction.getFileName() + "\" to disk because: " + e.getMessage(), 
+			} else if(status == TransactionStatus.TIMER_EXPIRED) {
+				Message response = new ErrorMessage(
+						transactionID.toString(), ErrorCode.INVALID_OPERATION,
+						"Transaction with ID (" + transactionID.toString() + ") timed out, so it cannot be committed",
 						client);
 				
 				response.execute();
 				return;
 			}
-
-			Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
-			response.execute();
-			return;
-			
-		} else { // send message to client asking to resent missed write messages
-			transaction.setCommitMessage(this);
-			
-			for (BigInteger missingTransactionID : missingWriteSequenceNumbers) {
-				Message response = new AskResendMessage(transactionID.toString(), missingTransactionID.toString(), client);
+	
+			// sequence number should equal the number writes that have been received
+			ArrayList<BigInteger> missingWriteSequenceNumbers = transaction.getMissingWritesSequenceNumbers(sequenceNumber);
+	
+			if (missingWriteSequenceNumbers == null) {
+				try {
+					transaction.writeMessageToDisk();
+				} catch (FileNotFoundException e) {
+					Message response = new ErrorMessage(transactionID.toString(), ErrorCode.FILE_NOT_FOUND, 
+							"Error writing \"" + transaction.getFileName() + "\" to disk because file could not be found. "
+									+ "It is possible the server does not have permissions to write to this directory "
+									+ "or the file path is incorrect. Diagnostic message: " + e.getMessage(), 
+							client);
+					
+					response.execute();
+					return;
+					
+				} catch (IOException e) {
+					Message response = new ErrorMessage(transactionID.toString(), ErrorCode.FILE_IO_ERROR, 
+							"could not write \"" + transaction.getFileName() + "\" to disk because: " + e.getMessage(), 
+							client);
+					
+					response.execute();
+					return;
+				}
+	
+				Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
 				response.execute();
+				return;
+				
+			} else { // send message to client asking to resent missed write messages
+				transaction.setCommitMessage(this);
+				
+				for (BigInteger missingTransactionID : missingWriteSequenceNumbers) {
+					Message response = new AskResendMessage(transactionID.toString(), missingTransactionID.toString(), client);
+					response.execute();
+				}
+				
+				return;
 			}
-			
-			return;
+		
 		}
 
 	}
