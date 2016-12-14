@@ -42,20 +42,23 @@ public class WriteMessage implements Message {
 			return;
 		}
 		
-		TransactionStatus status = transaction.getStatus();
-		
-		if(status == TransactionStatus.COMMITTED) {
-			return;
-		} else if(status == TransactionStatus.ABORTED) {
-			return;
-		}
-		
-		try {
-			transaction.addWriteOperation(this);
-		} catch(DuplicateMessageException e) {
+		synchronized(transaction) {
+			TransactionStatus status = transaction.getStatus();
 			
+			if(status == TransactionStatus.COMMITTED) {
+				return;
+			} else if(status == TransactionStatus.ABORTED) {
+				return;
+			} else if(status == TransactionStatus.TIMER_EXPIRED) {
+				return;
+			}
+			
+			try {
+				transaction.addWriteOperation(this);
+			} catch(DuplicateMessageException e) {
+				
+			}
 		}
-		
 	}
 	
 	public BigInteger getSequenceNumber() {
