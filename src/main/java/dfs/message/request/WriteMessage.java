@@ -4,10 +4,12 @@ import java.math.BigInteger;
 
 import main.java.dfs.ClientConnection;
 import main.java.dfs.DuplicateMessageException;
+import main.java.dfs.RecoveryLog;
 import main.java.dfs.Transaction;
 import main.java.dfs.TransactionManager;
 import main.java.dfs.TransactionStatus;
 import main.java.dfs.message.Message;
+import main.java.dfs.message.response.AckMessage;
 import main.java.dfs.message.response.ErrorCode;
 import main.java.dfs.message.response.ErrorMessage;
 
@@ -55,8 +57,19 @@ public class WriteMessage implements Message {
 			
 			try {
 				transaction.addWriteOperation(this);
-			} catch(DuplicateMessageException e) {
 				
+				Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
+				
+				RecoveryLog.log(METHOD_ID, transactionID.toString(), sequenceNumber.toString(), data);
+				response.execute();
+				return;
+				
+			} catch(DuplicateMessageException e) {
+				Message response = new ErrorMessage(transactionID.toString(), ErrorCode.INVALID_OPERATION,
+						"Received write request with same sequence number (" 
+						+ sequenceNumber.toString() + ") twice, so second write request is ignored.",
+						client);
+				response.execute();
 			}
 		}
 	}
