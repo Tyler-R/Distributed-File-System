@@ -3,6 +3,7 @@ package main.java.dfs.message.request;
 import java.math.BigInteger;
 
 import main.java.dfs.ClientConnection;
+import main.java.dfs.RecoveryLog;
 import main.java.dfs.Transaction;
 import main.java.dfs.TransactionManager;
 import main.java.dfs.TransactionStatus;
@@ -73,6 +74,8 @@ public class AbortMessage implements Message {
 			transaction.abort();
 			
 			Message response = new AckMessage(transactionID.toString(), "0", client);
+			
+			RecoveryLog.log(METHOD_ID, transactionID.toString(), "0", "ABORT");
 			response.execute();
 		}
 		
