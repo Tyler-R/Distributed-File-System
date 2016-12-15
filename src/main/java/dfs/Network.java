@@ -36,7 +36,7 @@ public class Network {
 		return inetAddress;
 	}
 	
-	public ClientConnection getClientConnection() {
+	public synchronized ClientConnection getClientConnection() {
 		Socket socket = null;
 		while(socket == null){
 			try {

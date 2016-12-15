@@ -3,6 +3,7 @@ package main.java.dfs.message.request;
 import java.math.BigInteger;
 
 import main.java.dfs.ClientConnection;
+import main.java.dfs.RecoveryLog;
 import main.java.dfs.Transaction;
 import main.java.dfs.TransactionManager;
 import main.java.dfs.message.Message;
@@ -62,6 +63,7 @@ public class NewTransactionMessage implements Message {
 					newTransaction.getTransactionID().toString(), 
 					"0", ErrorCode.ACK, "", client);
 			
+			RecoveryLog.log(METHOD_ID, newTransaction.getTransactionID().toString(), "0", fileName);
 			response.execute();
 		}
 		

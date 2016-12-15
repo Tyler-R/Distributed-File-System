@@ -6,6 +6,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 
 import main.java.dfs.ClientConnection;
+import main.java.dfs.RecoveryLog;
 import main.java.dfs.Transaction;
 import main.java.dfs.TransactionManager;
 import main.java.dfs.TransactionStatus;
@@ -97,7 +98,11 @@ public class CommitMessage implements Message {
 				}
 	
 				Message response = new AckMessage(transactionID.toString(), sequenceNumber.toString(), client);
+				
+				RecoveryLog.log(METHOD_ID, transactionID.toString(), sequenceNumber.toString(), "COMMIT");
 				response.execute();
+				
+				
 				return;
 				
 			} else { // send message to client asking to resent missed write messages
