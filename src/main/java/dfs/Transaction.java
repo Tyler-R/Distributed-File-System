@@ -28,9 +28,13 @@ public class Transaction {
 	
 	private Timer timer = new Timer(TIMER_DELAY_IN_MILLISECONDS, (e) -> {
 		synchronized(this) {
-			if(status == TransactionStatus.IN_PROGRESS) {
+			if(status == TransactionStatus.IN_PROGRESS 
+					|| status == TransactionStatus.COMMIT_WHEN_ALL_WRITES_RECEIVED) 
+			{
 				status = TransactionStatus.TIMER_EXPIRED;
+				RecoveryLog.log(CommitMessage.METHOD_ID, transactionID.toString(), "0", "TIMEOUT");
 				System.out.println("Trannsaction with ID (" + transactionID.toString() + ") timed out");
+				
 			}
 			this.timer.stop();
 		}
@@ -57,6 +61,10 @@ public class Transaction {
 		if(status == TransactionStatus.IN_PROGRESS) {
 			status = TransactionStatus.ABORTED;
 		}
+	}
+	
+	public void stopTimeout() {
+		timer.stop();
 	}
 
 	public void addWriteOperation(WriteMessage newMessage) throws DuplicateMessageException {
@@ -154,6 +162,10 @@ public class Transaction {
 
 	public TransactionStatus getStatus() {
 		return status;
+	}
+	
+	public void setStatus(TransactionStatus newStatus) {
+		status = newStatus;
 	}
 
 	public void setCommitMessage(CommitMessage commitMessage) {
