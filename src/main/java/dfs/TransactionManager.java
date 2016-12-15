@@ -25,32 +25,42 @@ public class TransactionManager {
 		long newTransactionID = currentTransactionIDCounter.incrementAndGet();
 		
 		Transaction transaction = new Transaction(BigInteger.valueOf(newTransactionID), fileName);
-		transactions.add(transaction);
+		synchronized(this) {
+			transactions.add(transaction);
+		}
 		
 		return transaction;
 		
 	}
 	
-	public boolean containTransaction(BigInteger transactionID) {
-		for(Transaction transaction: transactions) {
-			if(transaction.getTransactionID().equals(transactionID)) {
-				return true;
+	public Transaction getTransaction(BigInteger transactionID) {
+		synchronized(this) {
+			for(Transaction transaction: transactions) {
+				if(transaction.getTransactionID().equals(transactionID)) {
+					return transaction;
+				}
 			}
+			
+			return null;
 		}
-		
-		return false;
 	}
 	
-	public Transaction getTransaction(BigInteger transactionID) {
+	public void addExistingTransaction(Transaction transaction) {
 		
-		for(Transaction transaction: transactions) {
-			if(transaction.getTransactionID().equals(transactionID)) {
-				return transaction;
-			}
+		transactions.add(transaction);
+		
+		if(transaction.getTransactionID().compareTo(BigInteger.valueOf(currentTransactionIDCounter.get())) > 0) {
+			currentTransactionIDCounter.set(transaction.getTransactionID().longValue());
 		}
+	}
+	
+	public void removeTransaction(Transaction transaction) {
+		transactions.remove(transaction);
+		transaction.stopTimeout();
 		
-		return null;
-		
+		if(transaction.getTransactionID().equals(BigInteger.valueOf(currentTransactionIDCounter.get()))) {
+			currentTransactionIDCounter.decrementAndGet();
+		}
 	}
 	
 	public static TransactionManager getInstance() {
