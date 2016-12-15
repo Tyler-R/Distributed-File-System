@@ -15,9 +15,7 @@ public class Main {
 		System.out.println("For example: ./server 127.0.0.1 8080 /mnt/test");
 	}
 	
-	public static Message parseMessage(String header, String data, ClientConnection connection) {
-		System.out.println("---------------------------------------------------------");
-				
+	public static Message parseMessage(String header, String data, ClientConnection connection) {				
 		
 		String parsedHeader[] = header.split(" ");
 		
@@ -38,7 +36,6 @@ public class Main {
 		
 		try {
 			if(data.length() < Integer.valueOf(contentLength)) {
-				System.out.println("ERROR: data too short, get more.  Data was length " + data.length() + " when it should be " + Integer.valueOf(contentLength));
 				return parseMessage(header, data + connection.getData(), connection);
 			}		
 		} catch(NumberFormatException e) {
@@ -47,21 +44,19 @@ public class Main {
 					connection);
 		}
 		
-		System.out.println("RECEIVED: " 
+		/*System.out.println("RECEIVED: " 
 				+ method + " " 
 				+ transactionID + " " 
 				+ sequenceNumber + " "
 				+ contentLength + "\n"
-				+ data);
+				+ data);*/
 		
 		Message requestMessage = MessageFactory.makeRequestMessage(method, transactionID, sequenceNumber, data, connection);
-		
-		System.out.println("---------------------------------------------------------");
-		
+				
 		return requestMessage;
 	}
 	
-	public static void main(String args[]) {
+	public static void main(String[] args) {
 		if(args.length != 3) {
 			printHelpMessage();
 			System.exit(1);
@@ -79,7 +74,44 @@ public class Main {
 		String fileSystemDirectory = args[2];
 		AtomicFile.directory = fileSystemDirectory;
 		
+		RecoveryLog.file = new AtomicFile(".recovery.log");
+		
+		RecoveryLog.reconstructTransactions();
+		
+		
 		Network network = new Network(ipAddress, port);
+		
+		int processors = Runtime.getRuntime().availableProcessors();
+		processors = (processors < 4 ? 4 : processors);
+		
+		Thread[] threads = new Thread[processors];
+		
+		for (int i = 0; i < threads.length; i++) {
+			
+			threads[i] = new Thread(()-> {
+				while(true){
+					ClientConnection connection = network.getClientConnection();
+					
+					NetworkMessage networkMessage = connection.getMessage();
+					if(networkMessage != null) {
+						Message message = parseMessage(networkMessage.header, networkMessage.data, connection);
+						
+						message.execute();
+					}
+				}
+			});
+			
+			threads[i].start();
+		}
+		
+		for (int i = 0; i < threads.length; i++) {
+			try {
+				threads[i].join();
+			} catch (InterruptedException e) {
+				System.out.println("Thread join failed");
+			}
+		}
+
 		
 		while(true) {
 			
