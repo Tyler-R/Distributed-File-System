@@ -38,7 +38,6 @@ public class AtomicFile {
 		} finally {
 			outStream.close();
 		}
-
 	}
 
 	public String read() throws FileNotFoundException, IOException {
@@ -80,6 +79,10 @@ public class AtomicFile {
 		}
 
 		return message;
+	}
+	
+	public String getFileName() {
+		return fileName;
 	}
 
 }
