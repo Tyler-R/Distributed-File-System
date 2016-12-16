@@ -28,7 +28,7 @@ once the server has been built running
 ```bash
 sh run.sh <ipAddress> <port> <directory> 
 ```
-Ex.
+For Example
 ```bash
 sh run.sh 127.0.0.1 8080 ./tmp/
 ```
