@@ -148,7 +148,7 @@ public class Transaction {
 	public void writeMessageToDisk() throws FileNotFoundException, IOException {
 		timer.stop();
 		
-		if(status == TransactionStatus.IN_PROGRESS) {
+		if(status == TransactionStatus.IN_PROGRESS || status == TransactionStatus.COMMIT_WHEN_ALL_WRITES_RECEIVED) {
 			String message = getWriteMessage();
 			
 			AtomicFile file = new AtomicFile(fileName);
