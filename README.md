@@ -1,3 +1,7 @@
+# Recovery log cleanup
+
+I added the command EXIT to handle graceful exits and cleaning up the recovery log.  When an EXIT command is sent the server will delete the .recoveryLog file and exit.
+
 # Requirements
 
 The server requires java 8 for compilation and execution.
