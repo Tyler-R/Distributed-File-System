@@ -5,6 +5,7 @@ import java.math.BigInteger;
 import main.java.dfs.ClientConnection;
 import main.java.dfs.message.request.AbortMessage;
 import main.java.dfs.message.request.CommitMessage;
+import main.java.dfs.message.request.ExitMessage;
 import main.java.dfs.message.request.NewTransactionMessage;
 import main.java.dfs.message.request.ReadMessage;
 import main.java.dfs.message.request.WriteMessage;
@@ -61,6 +62,8 @@ public abstract class MessageFactory {
 			
 			message = new AbortMessage(parsedTransactionID, connection);
 		
+		} else if(method.equals(ExitMessage.METHID_ID)) {
+			message = new ExitMessage();
 		}
 		
 		return message;

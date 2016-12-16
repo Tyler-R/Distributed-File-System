@@ -9,6 +9,8 @@ import main.java.dfs.message.response.ErrorMessage;
 
 public class Main {
 	
+	public static Thread[] threads = null;
+
 	
 	public static void printHelpMessage() {
 		System.out.println("ERROR server must take 3 arguments: ./server <ipAddress> <port> <directory>");
@@ -78,18 +80,18 @@ public class Main {
 		
 		RecoveryLog.reconstructTransactions();
 		
-		
 		Network network = new Network(ipAddress, port);
 		
 		int processors = Runtime.getRuntime().availableProcessors();
 		processors = (processors < 4 ? 4 : processors);
 		
-		Thread[] threads = new Thread[processors];
+		threads = new Thread[processors];
+		
 		
 		for (int i = 0; i < threads.length; i++) {
 			
 			threads[i] = new Thread(()-> {
-				while(true){
+				while(!Thread.currentThread().isInterrupted()){
 					ClientConnection connection = network.getClientConnection();
 					
 					NetworkMessage networkMessage = connection.getMessage();
@@ -102,29 +104,6 @@ public class Main {
 			});
 			
 			threads[i].start();
-		}
-		
-		for (int i = 0; i < threads.length; i++) {
-			try {
-				threads[i].join();
-			} catch (InterruptedException e) {
-				System.out.println("Thread join failed");
-			}
-		}
-
-		
-		while(true) {
-			
-			ClientConnection connection = network.getClientConnection();
-			System.out.println("RECEIVED CONNECTION:");
-			
-			NetworkMessage networkMessage = connection.getMessage();
-			if(networkMessage != null) {
-				Message message = parseMessage(networkMessage.header, networkMessage.data, connection);
-				
-				message.execute();
-			}
-
 		}
 	}
 }

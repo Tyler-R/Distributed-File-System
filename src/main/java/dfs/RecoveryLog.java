@@ -1,5 +1,6 @@
 package main.java.dfs;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -114,6 +115,13 @@ public class RecoveryLog {
 		} catch (IOException e) {
 			System.out.println("IO Error occured while reading \"" + file.getFileName() + "\"");
 		}
+	}
+	
+	public static void deleteLog() {
+		
+		File logFile = new File(AtomicFile.directory + file.getFileName());
+		logFile.delete();
+		
 	}
 	
 }
