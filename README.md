@@ -46,3 +46,7 @@ ERROR - Server informs the client that there was an error when processing a mess
 
 206 - File not found.
 
+## Wire Protocol
+
+Each message in the wire protocol is broken up into two sections, the header followed by the data.
+
