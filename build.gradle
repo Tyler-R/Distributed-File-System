@@ -1,0 +1,22 @@
+apply plugin: 'application'
+mainClassName = "main.java.dfs.Main"
+
+apply plugin: 'java'
+compileJava {
+    sourceCompatibility = '1.8'
+}
+
+run {
+    if ( project.hasProperty("appArgs") ) {
+        args Eval.me(appArgs)
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:1.1.0'
+    }
+}
