@@ -5,3 +5,7 @@
 
 *.class
 /bin/
+/.gradle/
+
+# program generated log files
+.recovery.log
