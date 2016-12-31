@@ -10,3 +10,5 @@ gradle run -PappArgs="['127.0.0.1', '8080', './tmp/']"
 
 will execute the program. Note that the directory must end in a '/' character.
 
+Alternatively you can use an IDE such as eclipse to build and run the server.
+
