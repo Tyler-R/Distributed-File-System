@@ -50,3 +50,27 @@ ERROR - Server informs the client that there was an error when processing a mess
 
 Each message in the wire protocol is broken up into two sections, the header followed by the data.
 
+#### Commands sent to the server must be in the following format:
+
+* The header contains 4 fields, each seperated by a space.  
+* If the data field is not empty then the header is followed by a "\r\n\r\n" sequence.
+* If the data field is empty then the header is followed by a "\r\n\r\n\r\n" sequence.
+
+The 4 header fields are: Command, Transaction ID, Message Sequence Number and data length.
+
+Command Field - contains the operation that the server will perform (listed above)
+
+Transaction ID Field - specifies which transaction the message relates to. 
+
+Message Sequence Number Field - specifies the current position of the message in a transaction.  NEW_TXN messages have a sequence number of 0. 
+
+Data Length Field - specifies the length of the data field.  Should be 0 if the data field is empty.
+
+Data Field - if the command is a write then the data field contains the data to be written to the file.  If the command is a read then the data field contains the name of the file to be read.
+
+Examples: 
+* READ -1 0 8\r\n\r\ntest.txt
+* NEW_TXN -1 0 0\r\n\r\n\r\n
+* WRITE 1 1 11\r\n\r\nhello world
+
+#### Responses sent from the server will be in the following format:
