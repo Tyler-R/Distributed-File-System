@@ -74,3 +74,22 @@ Examples:
 * WRITE 1 1 11\r\n\r\nhello world
 
 #### Responses sent from the server will be in the following format:
+
+* The header contains 5 fields, each seperated by a space.  
+* If the data field is not empty then the header is followed by a "\r\n\r\n" sequence.
+* If the data field is empty then the header is followed by a "\r\n\r\n\r\n" sequence.
+
+The 5 header fields are: Command, Transaction ID, Message Sequence Number, Error Code, and Data Length
+
+Command Field - contains the type of response. All valid response commands are listed above.
+
+Transaction ID Field - Specifies which transaction the response relates to.
+
+Message Sequence Number Field - Only relevant for an ASK_RESEND message. For an ASK_RESEND message it specifies which write message needs to be resent to the server.
+
+Error Code - Specifies the error code assosiated with the response. All valid error codes are listed above.
+
+Data Length Field - specifies the length of the data field.  Should be 0 if the data field is empty.
+
+Data Field - Contains an easy to understand explanation of what caused the error.
+
